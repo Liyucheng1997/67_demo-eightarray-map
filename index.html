@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>诸葛亮八阵图 · Three.js 阵法可视化</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="formation-canvas" aria-label="诸葛亮八阵图三维阵法分布"></canvas>
+
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Three.js 阵法推演</p>
+          <h1>诸葛亮八阵图</h1>
+        </div>
+        <div class="topbar-actions" aria-label="场景控制">
+          <button class="icon-button" id="resetView" type="button" aria-label="重置视角" title="重置视角">
+            <i data-lucide="rotate-ccw"></i>
+          </button>
+          <button class="icon-button is-active" id="toggleMotion" type="button" aria-label="暂停或播放推演" title="暂停或播放推演">
+            <i data-lucide="play"></i>
+          </button>
+        </div>
+      </header>
+
+      <aside class="control-panel" aria-label="八阵图说明">
+        <div class="mode-tabs" role="tablist" aria-label="讲解模式">
+          <button class="mode-tab is-active" data-mode="layout" type="button">分布</button>
+          <button class="mode-tab" data-mode="structure" type="button">结构</button>
+          <button class="mode-tab" data-mode="power" type="button">威力</button>
+        </div>
+
+        <section class="current-formation">
+          <p class="section-kicker" id="formationKicker">当前阵位</p>
+          <h2 id="formationName">中军枢纽</h2>
+          <p id="formationDescription">
+            中军位于八阵图核心，负责号令、观察与预备队调度。外层八阵像齿轮一样围绕它展开。
+          </p>
+        </section>
+
+        <section class="details" id="detailsPanel" aria-live="polite"></section>
+
+        <section class="legend" aria-label="图例">
+          <div><span class="legend-swatch command"></span>中军与预备</div>
+          <div><span class="legend-swatch block"></span>阵列方块</div>
+          <div><span class="legend-swatch route"></span>机动通道</div>
+          <div><span class="legend-swatch support"></span>互援火力线</div>
+        </section>
+      </aside>
+
+      <nav class="formation-rail" aria-label="八阵选择">
+        <button class="formation-chip is-active" data-formation="center" type="button">中军</button>
+        <button class="formation-chip" data-formation="sky" type="button">天覆</button>
+        <button class="formation-chip" data-formation="earth" type="button">地载</button>
+        <button class="formation-chip" data-formation="wind" type="button">风扬</button>
+        <button class="formation-chip" data-formation="cloud" type="button">云垂</button>
+        <button class="formation-chip" data-formation="dragon" type="button">龙飞</button>
+        <button class="formation-chip" data-formation="tiger" type="button">虎翼</button>
+        <button class="formation-chip" data-formation="bird" type="button">鸟翔</button>
+        <button class="formation-chip" data-formation="snake" type="button">蛇蟠</button>
+      </nav>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
