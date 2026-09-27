@@ -3,63 +3,105 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>诸葛亮八阵图 · Three.js 阵法可视化</title>
+    <title>诸葛亮八阵图 · 推演沙盘</title>
+    <meta name="description" content="以 Three.js 复原诸葛亮八阵图，并用战术推演比较八阵与横阵、方阵、圆阵、鹤翼、锋矢在不同敌情下的表现。" />
   </head>
   <body>
     <div id="app">
-      <canvas id="formation-canvas" aria-label="诸葛亮八阵图三维阵法分布"></canvas>
+      <canvas id="scene" aria-label="八阵图三维推演沙盘"></canvas>
 
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Three.js 阵法推演</p>
-          <h1>诸葛亮八阵图</h1>
-        </div>
-        <div class="topbar-actions" aria-label="场景控制">
-          <button class="icon-button" id="resetView" type="button" aria-label="重置视角" title="重置视角">
-            <i data-lucide="rotate-ccw"></i>
-          </button>
-          <button class="icon-button is-active" id="toggleMotion" type="button" aria-label="暂停或播放推演" title="暂停或播放推演">
-            <i data-lucide="play"></i>
-          </button>
-        </div>
+      <header class="brand">
+        <p class="eyebrow">鱼腹浦 · 推演沙盘</p>
+        <h1>诸葛亮八阵图</h1>
+        <p class="verse">功盖三分国，名成八阵图。——杜甫</p>
       </header>
 
-      <aside class="control-panel" aria-label="八阵图说明">
-        <div class="mode-tabs" role="tablist" aria-label="讲解模式">
-          <button class="mode-tab is-active" data-mode="layout" type="button">分布</button>
-          <button class="mode-tab" data-mode="structure" type="button">结构</button>
-          <button class="mode-tab" data-mode="power" type="button">威力</button>
-        </div>
+      <div class="toolbar" aria-label="视角与显示">
+        <button class="tool" data-view="top" type="button" title="俯瞰阵形"><i data-lucide="grid-3x3"></i><span>俯瞰</span></button>
+        <button class="tool" data-view="oblique" type="button" title="斜向全景"><i data-lucide="mountain"></i><span>全景</span></button>
+        <button class="tool" data-view="close" type="button" title="近观前阵"><i data-lucide="scan-eye"></i><span>近观</span></button>
+        <button class="tool" id="followBtn" type="button" title="镜头跟随战报"><i data-lucide="crosshair"></i><span>跟随</span></button>
+        <button class="tool is-on" id="labelBtn" type="button" title="显示阵名标注"><i data-lucide="tag"></i><span>标注</span></button>
+        <button class="tool" id="ringBtn" type="button" title="显示各队士气环"><i data-lucide="circle-dot"></i><span>士气</span></button>
+      </div>
 
-        <section class="current-formation">
-          <p class="section-kicker" id="formationKicker">当前阵位</p>
-          <h2 id="formationName">中军枢纽</h2>
-          <p id="formationDescription">
-            中军位于八阵图核心，负责号令、观察与预备队调度。外层八阵像齿轮一样围绕它展开。
+      <aside class="panel" aria-label="控制面板">
+        <nav class="tabs" role="tablist">
+          <button class="tab is-active" data-tab="lore" type="button">阵法</button>
+          <button class="tab" data-tab="sim" type="button">推演</button>
+          <button class="tab" data-tab="compare" type="button">对比</button>
+        </nav>
+
+        <section class="tab-body is-active" data-body="lore">
+          <p class="lead">
+            八阵之法，本于井田：划地为九宫，中宫为中军，八阵环列其外。四正为<b>天、地、风、云</b>，四奇为<b>龙、虎、鸟、蛇</b>，余下的机动兵力由大将握于中军。
+          </p>
+          <div class="chips" id="groupChips"></div>
+          <article class="card group-card" id="groupCard"></article>
+          <h3 class="section-title">阵法要义</h3>
+          <div class="doctrines" id="doctrines"></div>
+          <p class="footnote">
+            八阵方位历来说法不一。本复原采用《握奇经》「四正四奇」与李靖「井分四道、开方九焉」之说：四正居前后左右，四奇居四隅；「八阵六十四」取每阵八队。
           </p>
         </section>
 
-        <section class="details" id="detailsPanel" aria-live="polite"></section>
+        <section class="tab-body" data-body="sim">
+          <h3 class="section-title">我军阵型</h3>
+          <div class="pick-grid" id="formationPick"></div>
+          <div class="card compact" id="formationCard"></div>
+          <h3 class="section-title">魏军来势</h3>
+          <div class="pick-grid" id="scenarioPick"></div>
+          <p class="brief" id="scenarioBrief"></p>
+          <div class="stat-block" id="liveStats"></div>
+          <h3 class="section-title">战报</h3>
+          <ol class="log" id="log"></ol>
+        </section>
 
-        <section class="legend" aria-label="图例">
-          <div><span class="legend-swatch command"></span>中军与预备</div>
-          <div><span class="legend-swatch block"></span>阵列方块</div>
-          <div><span class="legend-swatch route"></span>机动通道</div>
-          <div><span class="legend-swatch support"></span>互援火力线</div>
+        <section class="tab-body" data-body="compare">
+          <p class="lead small">
+            同一支蜀军（8420 人）换用六种阵型，迎击六种魏军来势。表中为 3 次推演的平均：胜负、交换比（魏军阵亡 ÷ 我军阵亡）、战后我军成建制兵力。点击格子即可观看这一仗。
+          </p>
+          <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
+          <div class="compare-actions">
+            <button class="btn" id="rerunBtn" type="button"><i data-lucide="refresh-cw"></i>在浏览器里重新推演</button>
+            <span class="muted" id="rerunStatus"></span>
+          </div>
+          <div class="insights" id="insights"></div>
+          <details class="model-notes">
+            <summary>推演模型说明</summary>
+            <ul>
+              <li>以「队」（百人左右）为单位，每队有兵力、士气、疲劳和朝向；六种阵型的兵种数值完全相同，差别只在站位与号令。</li>
+              <li>受击方向决定杀伤与士气冲击：侧面 ×1.7，背面 ×2.4；驻止的方队四面可应敌，侧背惩罚较轻。</li>
+              <li>同一面挤不下太多队伍：第二、三个从同一方向攻来的队效率递减，包抄比堆人更有效。</li>
+              <li>骑兵高速撞入有冲击杀伤，但正面撞上枪阵会被反挫；步兵接战持续疲劳，疲劳降低攻防。</li>
+              <li>士气跌破阈值即溃散，并波及二十余米内的友队；三面受敌时士气急剧流失。</li>
+              <li>八阵特有号令：队内轮换、整阵穿通道轮换、四奇出击、中军握奇、四面合围时收拢为一阵。</li>
+            </ul>
+          </details>
         </section>
       </aside>
 
-      <nav class="formation-rail" aria-label="八阵选择">
-        <button class="formation-chip is-active" data-formation="center" type="button">中军</button>
-        <button class="formation-chip" data-formation="sky" type="button">天覆</button>
-        <button class="formation-chip" data-formation="earth" type="button">地载</button>
-        <button class="formation-chip" data-formation="wind" type="button">风扬</button>
-        <button class="formation-chip" data-formation="cloud" type="button">云垂</button>
-        <button class="formation-chip" data-formation="dragon" type="button">龙飞</button>
-        <button class="formation-chip" data-formation="tiger" type="button">虎翼</button>
-        <button class="formation-chip" data-formation="bird" type="button">鸟翔</button>
-        <button class="formation-chip" data-formation="snake" type="button">蛇蟠</button>
-      </nav>
+      <div class="hud" id="hud">
+        <div class="hud-controls">
+          <button class="play" id="playBtn" type="button" aria-label="开战"><i data-lucide="swords"></i><span>开战</span></button>
+          <button class="icon" id="resetBtn" type="button" title="重新布阵" aria-label="重新布阵"><i data-lucide="rotate-ccw"></i></button>
+          <div class="speed" id="speedPick" role="group" aria-label="倍速">
+            <button data-speed="1" type="button">1×</button>
+            <button data-speed="3" type="button" class="is-active">3×</button>
+            <button data-speed="6" type="button">6×</button>
+            <button data-speed="12" type="button">12×</button>
+          </div>
+          <span class="clock" id="clock">布阵</span>
+        </div>
+        <div class="hud-bars">
+          <div class="side shu"><span class="name">蜀军 · <em id="shuForm">八阵图</em></span><div class="bar"><i id="shuBar"></i></div><span class="num" id="shuNum"></span></div>
+          <div class="side wei"><span class="name">魏军 · <em id="weiForm">正面强攻</em></span><div class="bar"><i id="weiBar"></i></div><span class="num" id="weiNum"></span></div>
+        </div>
+        <canvas class="spark" id="spark" width="300" height="64"></canvas>
+      </div>
+
+      <div class="tooltip" id="tip" hidden></div>
+      <div class="result" id="result" hidden></div>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>
